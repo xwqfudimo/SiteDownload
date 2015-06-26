@@ -65,7 +65,7 @@ public class DownloadFile {
 	}
 	
 	//根据内容类型获得文件名
-	private static String getFilename(String contentType, String urlStr) {
+	public static String getFilename(String contentType, String urlStr) {
 		String filename = "";
 		if(contentType.contains("html")) {
 			if(urlStr.endsWith("/")) return "index.html";
@@ -79,7 +79,8 @@ public class DownloadFile {
 			filename = urlStr.substring(urlStr.lastIndexOf("/")+1);
 			return filename;
 		}
-		else if(contentType.contains("javascript") || contentType.contains("json")) {
+		else if(contentType.contains("javascript")) {
+			urlStr = urlStr.substring(0, urlStr.lastIndexOf(".js") + 3);
 			filename = urlStr.substring(urlStr.lastIndexOf("/")+1);
 			return filename;
 		}
@@ -116,7 +117,7 @@ public class DownloadFile {
 	}
 	
 	//创建文件
-	private static File createFile(String filename, String storePath) throws Exception {
+	public static File createFile(String filename, String storePath) throws Exception {
 		if(filename == null) throw new RuntimeException("文档类型错误");
 		File path = new File(storePath);
 		if(!path.exists()) path.mkdir();
@@ -128,7 +129,7 @@ public class DownloadFile {
 	
 	
 	//下载文本文件
-	private static File downText(URLConnection conn, File file) {
+	public static File downText(URLConnection conn, File file) {
 		BufferedReader bufferReader = null;
 		PrintWriter writer = null;
 		
@@ -164,7 +165,7 @@ public class DownloadFile {
 	
 	
 	//下载图片
-	private static File downImage(URLConnection conn, File file) {
+	public static File downImage(URLConnection conn, File file) {
 		BufferedInputStream bufferInputStream = null;
 		FileOutputStream fos = null;
 		
