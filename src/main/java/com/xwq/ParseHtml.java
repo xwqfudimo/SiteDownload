@@ -12,11 +12,12 @@ import java.util.regex.Pattern;
 public class ParseHtml {
 	private static final String cssPath = "css";
 	private static final String jsPath = "js";
-	private static final String swap = ".swap";
+	private static final String imgPath = "images";
+	private static final String swap = ".swap.html";
 	
-	private static Pattern cssPattern = Pattern.compile("href=\"([\\w:/.-]+)\"");
-	private static Pattern jsPattern = Pattern.compile("src=\"([\\w:/.-]+)\"");
-	private static Pattern datamainPattern = Pattern.compile("data-main=\"([\\w:/.-]+)\"");
+	private static Pattern hrefPattern = Pattern.compile("href=\"([^\"]+)\"");
+	private static Pattern srcPattern = Pattern.compile("src=\"([^\"]+)\"");
+	private static Pattern datamainPattern = Pattern.compile("data-main=\"([^\"]+)\"");
 	private static Matcher matcher;
 	
 	private static BufferedReader bufferReader;
@@ -36,22 +37,30 @@ public class ParseHtml {
 			while((line = bufferReader.readLine()) != null) {
 				if(line.contains("rel=\"stylesheet\"")) {
 					line = parseCssFile(line);
-//					writer.println(line);
 				}
 				
-				if(line.contains("<script") && line.contains("src=") && !line.contains("document.write(")) {
+				if(line.contains("<script") && line.contains("src=") && line.contains("</script>") && !line.contains("document.write(")) {
 					line = parseJsFile(line);
-//					writer.println(line);
 				}
 				
-//				writer.println(line);
+				if(line.contains("<img") && line.contains("src=")) {
+					line = parseImg(line);
+				}
+				
+				writer.println(line);
 			}
+			writer.flush();
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
 			e.printStackTrace();
 		} finally {
-			
+			try {
+				if(writer != null) writer.close();
+				if(bufferReader != null) bufferReader.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
 		}
 	}
 	
@@ -63,8 +72,8 @@ public class ParseHtml {
 		line = line.substring(line.indexOf("<link"));
 		line = line.substring(0, line.indexOf(">"));
 		
-		//href="..."
-		matcher = cssPattern.matcher(line);
+		//style href="..."
+		matcher = hrefPattern.matcher(line);
 		if(matcher.find()) {
 			String cssUrlStr = matcher.group(1);
 			
@@ -85,8 +94,8 @@ public class ParseHtml {
 		line = line.substring(line.indexOf("<script"));
 		line = line.substring(0, line.indexOf("</script>"));
 		
-		//src="..."
-		matcher = jsPattern.matcher(line);
+		//script src="..."
+		matcher = srcPattern.matcher(line);
 		if(matcher.find()) {
 			String jsUrlStr = matcher.group(1);
 			
@@ -97,14 +106,45 @@ public class ParseHtml {
 			}
 		}
 		
-		//data-main="..."
+		//script data-main="..."
 		matcher = datamainPattern.matcher(line);
 		if(matcher.find()) {
 			String datamainUrlStr = matcher.group(1);
-			DownloadFile.downloadFile(datamainUrlStr, jsPath);   //下载相应的js文件
 			
-			String filename = datamainUrlStr.substring(datamainUrlStr.lastIndexOf("/")+1);
-			originLine = originLine.replace(datamainUrlStr, jsPath + "/" + filename);  //把js路径替换成自定义的路径
+			File jsFile = DownloadFile.downloadFile(datamainUrlStr, jsPath);   //下载相应的js文件
+			if(jsFile != null) {
+				String filename = datamainUrlStr.substring(datamainUrlStr.lastIndexOf("/")+1);
+				originLine = originLine.replace(datamainUrlStr, jsPath + "/" + filename);  //把js路径替换成自定义的路径
+			}
+		}
+		
+		return originLine;
+	}
+	
+	
+	//处理img图片
+	private static String parseImg(String line) {
+		String originLine = line;
+		line = line.substring(line.indexOf("<img"));
+		line = line.substring(0, line.indexOf(">"));
+		
+		//img src="..."
+		matcher = srcPattern.matcher(line);
+		if(matcher.find()) {
+			String imgUrlStr = matcher.group(1);
+			
+			File imgFile = DownloadFile.downloadFile(imgUrlStr, imgPath);  //下载相应的图片文件
+			
+			String filename = "";
+			String originImgUrlStr = imgUrlStr;
+			
+			if(imgFile != null) {
+				if(!imgUrlStr.endsWith(".jpg") && !imgUrlStr.endsWith(".png") && !imgUrlStr.endsWith(".gif") && !imgUrlStr.endsWith(".ico")) {
+					imgUrlStr = DownloadFile.getImgFilename(imgUrlStr);
+				}
+				filename = imgUrlStr.substring(imgUrlStr.lastIndexOf("/")+1);
+				originLine = originLine.replace(originImgUrlStr, imgPath + "/" + filename);  //把图片路径替换成自定义的路径
+			}
 		}
 		
 		return originLine;
