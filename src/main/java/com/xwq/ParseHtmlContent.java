@@ -9,11 +9,11 @@ import java.io.PrintWriter;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class ParseHtml {
-	private static final String cssPath = "css";
-	private static final String jsPath = "js";
-	private static final String imgPath = "images";
-	private static final String swap = ".swap.html";
+public class ParseHtmlContent {
+	public static final String CssPath = "css";
+	public static final String JsPath = "js";
+	public static final String ImgPath = "images";
+	private static final String HtmlSwap = ".swap.html";
 	
 	private static Pattern hrefPattern = Pattern.compile("href=\"([^\"]+)\"");
 	private static Pattern srcPattern = Pattern.compile("src=\"([^\"]+)\"");
@@ -30,7 +30,7 @@ public class ParseHtml {
 		try {
 			bufferReader = new BufferedReader(new FileReader(file));
 			
-			File swapFile = new File(file.getAbsolutePath() + swap);
+			File swapFile = new File(file.getAbsolutePath() + HtmlSwap);
 			if(!swapFile.exists()) swapFile.createNewFile();
 			writer = new PrintWriter(swapFile);
 			
@@ -66,7 +66,6 @@ public class ParseHtml {
 	}
 	
 	
-	//TODO css中import 和 img
 	//处理引用的css文件
 	public static String parseCssFile(String line) {
 		String originLine = line;
@@ -82,10 +81,10 @@ public class ParseHtml {
 			if(matcher.find()) {
 				String cssUrlStr = matcher.group(1);
 				
-				File cssFile = DownloadFile.downloadFile(cssUrlStr, cssPath);  //下载相应的css文件
+				File cssFile = DownloadFile.downloadFile(cssUrlStr, CssPath);  //下载相应的css文件
 				if(cssFile != null) {
 					String filename = cssUrlStr.substring(cssUrlStr.lastIndexOf("/")+1);
-					originLine = originLine.replace(cssUrlStr, cssPath + "/" + filename);  //把css路径替换成自定义的路径
+					originLine = originLine.replace(cssUrlStr, CssPath + "/" + filename);  //把css路径替换成自定义的路径
 					
 					line = originLine.substring(originLine.indexOf(filename));
 				}
@@ -111,10 +110,10 @@ public class ParseHtml {
 			if(matcher.find()) {
 				String jsUrlStr = matcher.group(1);
 				
-				File jsFile = DownloadFile.downloadFile(jsUrlStr, jsPath);   //下载相应的js文件
+				File jsFile = DownloadFile.downloadFile(jsUrlStr, JsPath);   //下载相应的js文件
 				if(jsFile != null) {
 					String filename = jsUrlStr.substring(jsUrlStr.lastIndexOf("/")+1);
-					originLine = originLine.replace(jsUrlStr, jsPath + "/" + filename);  //把js路径替换成自定义的路径
+					originLine = originLine.replace(jsUrlStr, JsPath + "/" + filename);  //把js路径替换成自定义的路径
 					
 					line = originLine.substring(originLine.indexOf(filename));
 				}
@@ -127,10 +126,10 @@ public class ParseHtml {
 		if(matcher.find()) {
 			String datamainUrlStr = matcher.group(1);
 			
-			File jsFile = DownloadFile.downloadFile(datamainUrlStr, jsPath);   //下载相应的js文件
+			File jsFile = DownloadFile.downloadFile(datamainUrlStr, JsPath);   //下载相应的js文件
 			if(jsFile != null) {
 				String filename = datamainUrlStr.substring(datamainUrlStr.lastIndexOf("/")+1);
-				originLine = originLine.replace(datamainUrlStr, jsPath + "/" + filename);  //把js路径替换成自定义的路径
+				originLine = originLine.replace(datamainUrlStr, JsPath + "/" + filename);  //把js路径替换成自定义的路径
 			}
 		}
 		
@@ -153,7 +152,7 @@ public class ParseHtml {
 			if(matcher.find()) {
 				String imgUrlStr = matcher.group(1);
 				
-				File imgFile = DownloadFile.downloadFile(imgUrlStr, imgPath);  //下载相应的图片文件
+				File imgFile = DownloadFile.downloadFile(imgUrlStr, ImgPath);  //下载相应的图片文件
 				
 				String filename = "";
 				String originImgUrlStr = imgUrlStr;
@@ -163,7 +162,7 @@ public class ParseHtml {
 						imgUrlStr = DownloadFile.getImgFilename(imgUrlStr);
 					}
 					filename = imgUrlStr.substring(imgUrlStr.lastIndexOf("/")+1);
-					originLine = originLine.replace(originImgUrlStr, imgPath + "/" + filename);  //把图片路径替换成自定义的路径
+					originLine = originLine.replace(originImgUrlStr, ImgPath + "/" + filename);  //把图片路径替换成自定义的路径
 					
 					line = originLine.substring(originLine.indexOf(filename));
 				}

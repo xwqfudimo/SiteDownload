@@ -16,7 +16,7 @@ import java.util.Date;
 import org.apache.log4j.Logger;
 
 public class DownloadFile {
-	private static final String storePath = "generate";
+	public static final String storePath = "generate";
 	private static String site = "";
 	private static Logger LOG = Logger.getLogger(DownloadFile.class);
 	
