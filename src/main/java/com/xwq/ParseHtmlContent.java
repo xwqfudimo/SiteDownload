@@ -13,7 +13,7 @@ public class ParseHtmlContent {
 	public static final String CssPath = "css";
 	public static final String JsPath = "js";
 	public static final String ImgPath = "images";
-	private static final String HtmlSwap = ".swap.html";
+	public static final String HtmlSwap = ".swap.html";
 	
 	private static Pattern hrefPattern = Pattern.compile("href=\"([^\"]+)\"");
 	private static Pattern srcPattern = Pattern.compile("src=\"([^\"]+)\"");

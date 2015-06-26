@@ -12,21 +12,22 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.apache.log4j.Logger;
 
 public class DownloadFile {
 	public static final String storePath = "generate";
-	private static String site = "";
+	public static Map<String, String> pagesMap = new HashMap<String, String>();
 	private static Logger LOG = Logger.getLogger(DownloadFile.class);
 	
-	public static void setSiteAddr(String siteAddr) {
-		site = siteAddr;
+	public static void setPagesMap(Map<String,String> map) {
+		pagesMap = map;
 	}
 	
 	//下载文件
 	public static File downloadFile(String urlStr, String subPath) {
-		if(!urlStr.startsWith("http://")) urlStr = site + urlStr;
 		if(subPath == null) subPath = "";
 		
 		URLConnection conn = null;
@@ -68,10 +69,7 @@ public class DownloadFile {
 	public static String getFilename(String contentType, String urlStr) {
 		String filename = "";
 		if(contentType.contains("html")) {
-			if(urlStr.endsWith("/")) return "index.html";
-			
-			filename = urlStr.substring(urlStr.lastIndexOf("/")+1);
-			if(filename.contains(".")) filename = filename.substring(0, filename.indexOf("."));
+			filename = pagesMap.get(urlStr); 
 			return filename + ".html";
 		}
 		else if(contentType.contains("css")) {
@@ -174,8 +172,9 @@ public class DownloadFile {
 			fos = new FileOutputStream(file);
 			
 			byte[] buff = new byte[1024];
-			while(bufferInputStream.read(buff, 0, buff.length) != -1) {
-				fos.write(buff, 0, buff.length);
+			int len;
+			while((len = bufferInputStream.read(buff)) != -1) {
+				fos.write(buff, 0, len);
 			}
 			fos.flush();
 		} catch (FileNotFoundException e) {

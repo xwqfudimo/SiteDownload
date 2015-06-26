@@ -16,7 +16,7 @@ public class ParseCssFileContent {
 	//相对路径时css文件中基础路径
 	private static String baseUrl;
 	private static String cssFilePath = DownloadFile.storePath + "/" + ParseHtmlContent.CssPath;
-	private static String cssSwap = ".swap.css";
+	public static String CssSwap = ".swap.css";
 	private static Pattern urlPattern = Pattern.compile("url\\(\"?([^\\)]+\"?)\\)"); 
 	private static Matcher matcher;
 	private static final String pathFlag = "../";
@@ -38,67 +38,69 @@ public class ParseCssFileContent {
 		if(path.exists()) {
 			File[] files = path.listFiles();
 			for(File cssFile : files) {
-				if(!cssFile.getName().endsWith(cssSwap)) {
-						try {
-							reader = new BufferedReader(new FileReader(cssFile));
-							
-							File swapFile = new File(cssFile.getAbsoluteFile() + cssSwap);
-							if(!swapFile.exists()) swapFile.createNewFile();
-							writer = new PrintWriter(swapFile);
-							
-							LOG.debug(">>>>>>>>>>>>>> filename: " + cssFile.getName());
-							
-							String line;
-							while((line = reader.readLine()) != null) {
-								if(line.contains("url")) {
-										matcher = urlPattern.matcher(line);
-										if(matcher.find()) {
-											String url = matcher.group(1);
-											if(url.endsWith("\"")) url = url.substring(0, url.length()-1);
-											
-											String originUrl = url;
-											
-											if(!url.startsWith("http://")) {
-												url = url.replace(pathFlag, baseUrl);
-											}
-											
-											//下载文件并替换行内容
-											String filename= "";
-											if(url.endsWith(".css")) {
-												File file = DownloadFile.downloadFile(url, ParseHtmlContent.CssPath);
+				try {
+						if(!cssFile.getName().endsWith(CssSwap)) {
+								reader = new BufferedReader(new FileReader(cssFile));
+								
+								File swapFile = new File(cssFile.getAbsoluteFile() + CssSwap);
+								if(!swapFile.exists()) swapFile.createNewFile();
+								writer = new PrintWriter(swapFile);
+								
+								LOG.debug(">>>>>>>>>>>>>> filename: " + cssFile.getName());
+								
+								String line;
+								while((line = reader.readLine()) != null) {
+									if(line.contains("url")) {
+											matcher = urlPattern.matcher(line);
+											if(matcher.find()) {
+												String url = matcher.group(1);
+												if(url.endsWith("\"")) url = url.substring(0, url.length()-1);
+												if(url.contains("?")) url = url.substring(0, url.lastIndexOf("?"));
 												
-												if(file != null) {
-													filename = url.substring(url.lastIndexOf("/")+1, url.lastIndexOf(".css")+4);
-													line = line.replace(originUrl, pathFlag + ParseHtmlContent.CssPath + "/" + filename);
+												String originUrl = url;
+												
+												if(!url.startsWith("http://")) {
+													url = url.replace(pathFlag, baseUrl);
+												}
+												
+												//下载文件并替换行内容
+												String filename= "";
+												if(url.endsWith(".css")) {
+													File file = DownloadFile.downloadFile(url, ParseHtmlContent.CssPath);
+													
+													if(file != null) {
+														filename = url.substring(url.lastIndexOf("/")+1, url.lastIndexOf(".css")+4);
+														line = line.replace(originUrl, pathFlag + ParseHtmlContent.CssPath + "/" + filename);
+													}
+												}
+												
+												if(url.endsWith(".gif") || url.endsWith(".png") || url.endsWith(".jpg") || url.endsWith(".ico")) {
+													File file = DownloadFile.downloadFile(url, ParseHtmlContent.ImgPath);
+													
+													if(file != null) {
+														filename = url.substring(url.lastIndexOf("/")+1);
+														line = line.replace(originUrl, pathFlag + ParseHtmlContent.ImgPath + "/" + filename);
+													}
 												}
 											}
-											
-											if(url.endsWith(".gif") || url.endsWith(".png") || url.endsWith(".jpg") || url.endsWith(".ico")) {
-												File file = DownloadFile.downloadFile(url, ParseHtmlContent.ImgPath);
-												
-												if(file != null) {
-													filename = url.substring(url.lastIndexOf("/")+1);
-													line = line.replace(originUrl, pathFlag + ParseHtmlContent.ImgPath + "/" + filename);
-												}
-											}
-											
-											writer.println(line);
 										}
-								}
+									
+										writer.println(line);
+									}
+									
+									writer.flush();
 							}
-							writer.flush();
-						} catch (FileNotFoundException e) {
-							e.printStackTrace();
-						} catch (IOException e) {
-							e.printStackTrace();
-						} finally {
-							try {
-								if(writer != null) writer.close();
-								if(reader != null) reader.close();
-							} catch (IOException e) {
-								e.printStackTrace();
-							}
-						}
+				} catch (FileNotFoundException e) {
+					e.printStackTrace();
+				} catch (IOException e) {
+					e.printStackTrace();
+				} finally {
+					try {
+						if(writer != null) writer.close();
+						if(reader != null) reader.close();
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
 				}
 			}
 		}

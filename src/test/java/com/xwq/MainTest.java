@@ -12,11 +12,15 @@ public class MainTest {
 	@Test
 	public void test() {
 		String urlStr = "http://www.meishij.net/";
-		DownloadFile.setSiteAddr(urlStr);
 		file = DownloadFile.downloadFile(urlStr, null);
 		LOG.info("generate file：" + file.getAbsolutePath());
 		
 		ParseHtmlContent.parseHtml(file);
+		
+		String _baseUrl = "http://css.meishij.net/n/";
+		ParseCssFileContent.setConf(_baseUrl);
+		
+		ParseCssFileContent.parse();
 	}
 	
 	@Test
@@ -46,5 +50,15 @@ public class MainTest {
 		ParseCssFileContent.setConf(_baseUrl);
 		
 		ParseCssFileContent.parse();
+	}
+	
+	@Test
+	public void testReadConfig() {
+		Main.readConfig();
+	}
+	
+	@Test
+	public void testDeleteSwapFiles() {
+		Main.deleteSwapFiles();
 	}
 }
